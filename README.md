@@ -174,15 +174,18 @@ The system evaluates four regression architectures to capture both linear baseli
 
 In addition to point estimates, the recommendation module delivers production-grade business logic:
 
-1. **Confidence Interval Estimation**: Computes a dynamic bounded price corridor:
-   $$\text{Price}_{\text{Low}} = 0.90 \times \hat{y}, \quad \text{Price}_{\text{High}} = 1.10 \times \hat{y}$$
+1. **Confidence Interval Estimation**: Computes a dynamic bounded price corridor ($\pm 10\%$):
+   - **Lower Bound**: `Price_Low = 0.90 × Predicted_Fare`
+   - **Upper Bound**: `Price_High = 1.10 × Predicted_Fare`
+
 2. **Dynamic Pricing Tier Classification**:
-   - 🟢 **Budget Tier** ($\hat{y} < \$10.00$): Shared/Pool and short-distance transit options.
-   - 🔵 **Standard Tier** ($\$10.00 \le \hat{y} < \$20.00$): Standard UberX / Lyft rides under typical demand.
-   - 🟠 **Premium Tier** ($\$20.00 \le \hat{y} < \$35.00$): XL vehicle categories or rides with moderate surge multipliers.
-   - 🟣 **Luxury Tier** ($\hat{y} \ge \$35.00$): High-end chauffeur services (Black SUV, Lux Black XL) and heavy peak surge conditions.
+   - 🟢 **Budget Tier** (Fare < $10.00): Shared / Pool and short-distance transit options.
+   - 🔵 **Standard Tier** ($10.00 ≤ Fare < $20.00): Standard UberX / Lyft rides under typical demand.
+   - 🟠 **Premium Tier** ($20.00 ≤ Fare < $35.00): XL vehicle categories or rides with moderate surge multipliers.
+   - 🟣 **Luxury Tier** (Fare ≥ $35.00): High-end chauffeur services (Black SUV, Lux Black XL) and heavy peak surge conditions.
+
 3. **Demand & Surge Advisor**:
-   - **Morning / Evening Peak (7–9 AM, 4–7 PM)**: High passenger density; flags recommended surge of `1.25x - 1.50x`.
+   - **Morning / Evening Peak (7–9 AM, 4–7 PM)**: High passenger density; flags recommended surge of `1.25x – 1.50x`.
    - **Late Night (10 PM – 6 AM)**: Lower passenger competition; flags normal base tariff.
    - **Off-Peak Daylight**: Balanced supply-demand equilibrium; standard pricing.
 
