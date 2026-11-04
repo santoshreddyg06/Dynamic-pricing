@@ -19,10 +19,8 @@ An end-to-end Machine Learning and Dynamic Pricing decision support system train
 - [Machine Learning Models & Evaluation](#-machine-learning-models--evaluation)
 - [Pricing Recommendation Engine](#-pricing-recommendation-engine)
 - [Setup & Execution Guide](#-setup--execution-guide)
-  - [Option A: Running in Google Colab](#option-a-running-in-google-colab)
-  - [Option B: Running Locally](#option-b-running-locally)
 - [Requirements](#-requirements)
-- [Academic Rubric Coverage](#-academic-rubric-coverage)
+- [Technical Architecture & Verification Standards](#-technical-architecture--verification-standards)
 
 ---
 
@@ -97,7 +95,7 @@ Dynamic_Pricing/
 ├── dynamic_pricing_notebook.ipynb  # Primary Jupyter notebook (Cells 1-18)
 ├── app.py                          # Streamlit Multi-Page Interactive Dashboard
 ├── requirements.txt                # Production environment dependencies
-├── README.md                       # Comprehensive system documentation & rubric map
+├── README.md                       # Comprehensive system architecture & documentation
 ├── rideshare_kaggle.csv            # Kaggle Boston Uber/Lyft dataset (~367 MB)
 │
 ├── best_model.pkl                  # Serialized best regressor (XGBoost / RF)
@@ -190,9 +188,7 @@ In addition to point estimates, the recommendation module delivers production-gr
 
 ---
 
-## 🚀 Setup & Execution Guide (Local & Submission Ready)
-
-### Running Locally (Jupyter Notebook / VS Code)
+## 🚀 Setup & Execution Guide
 
 1. **Navigate to the Project Directory**:
    ```bash
@@ -254,24 +250,21 @@ scikit-learn>=1.3.0
 xgboost>=2.0.0
 streamlit>=1.28.0
 joblib>=1.3.0
-pyngrok>=7.0.0
-pypdf>=4.0.0
 ```
 
 ---
 
-## 📑 Academic Rubric Coverage
+## 📑 Technical Architecture & Verification Standards
 
-This project strictly adheres to the course evaluation criteria outlined in the **Python for Data Science (PDS)** Project Guidelines:
+This system is engineered in accordance with production machine learning best practices:
 
-| Rubric Component | Weight | Specific Project Realization | Notebook & Code Mapping |
-| :--- | :---: | :--- | :--- |
-| **2(a) Theoretical Foundations** | **10%** | Comprehensive mathematical formulation of Linear Regression (OLS), Ensemble Bagging (Random Forest), Gradient Boosting theory, XGBoost objective regularization ($L_1 / L_2$), and Dynamic Pricing surge elasticity. | Embedded in Notebook Section Markdown headers, cell descriptions, and mathematical equations. |
-| **2(b) Project Implementation** | **20%** | Pure, self-contained Python implementation. Modular data pipeline, custom feature engineering (`price_per_mile`, peak hours, weather categories), scalable label encoding, multi-model training harness, and production Streamlit interface. | **Cells 1–18**; Full multi-page application in [`app.py`](app.py). |
-| **2(c) Experimental Results & Validation** | **10%** | Thorough empirical benchmarking on 693k records: MAE, RMSE, $R^2$, 5-Fold Cross-Validation with variance analysis, top-15 feature importance rankings, and actual-vs-predicted residual diagnostics. | **Cells 14, 15, 16**; Model comparison tables, bar plots, residual scatter, and CV results. |
-| **2(d) Technical Reporting & Deliverables** | **10%** | Formatted technical presentation, structured Markdown documentation, LaTeX mathematical notation, workflow diagrams, and reproducible execution instructions. | Provided in this [`README.md`](README.md) and formatted documentation throughout [`dynamic_pricing_notebook.ipynb`](dynamic_pricing_notebook.ipynb). |
+| Architectural Component | Engineering Realization | Module & Code Mapping |
+| :--- | :--- | :--- |
+| **Theoretical Foundations** | Formal mathematical formulation of Linear Regression (OLS), Ensemble Bagging (Random Forest), Gradient Boosting theory, regularized objective functions (XGBoost), and Dynamic Pricing surge elasticity. | Embedded in notebook theoretical sections, LaTeX formulations, and documentation. |
+| **Pipeline Engineering** | Modular, reproducible Python pipeline: automated data cleaning, domain feature engineering (`price_per_mile`, peak hours, weather categories), categorical encoding, feature scaling, and inference recommendation module. | Notebook **Cells 1–18**, standalone training pipeline in [`train_models.py`](train_models.py), and web dashboard in [`app.py`](app.py). |
+| **Empirical Benchmarking & Validation** | Rigorous evaluation across 637k records: MAE, RMSE, $R^2$, 5-Fold Cross-Validation with variance analysis, top-15 feature importance rankings, and actual-vs-predicted residual diagnostics. | Notebook **Cells 14, 15, 16**; Model comparison tables, benchmark bar charts, residual scatter plots, and CV results. |
+| **Production Artifacts & Serving** | Serialized model artifacts (`best_model.pkl`, `scaler.pkl`, `label_encoders.pkl`, `model_metrics.json`), rule-based pricing tier segmentation, dynamic surge advisory, and interactive multi-page web application. | [`best_model.pkl`](best_model.pkl), [`app.py`](app.py), and [`model_metrics.json`](model_metrics.json). |
 
 ---
 
-*Author: Dynamic Pricing & Machine Learning Engineering Team*  
-*Course: Python for Data Science (PDS) — Monsoon Session*
+*Author: Machine Learning & Dynamic Pricing Engineering*
