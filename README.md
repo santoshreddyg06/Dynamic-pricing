@@ -81,7 +81,7 @@ The system utilizes the Uber and Lyft Boston Dataset (`rideshare_kaggle.csv`):
 |                 4. Decision Support & Interactive Application Layer               |
 |  - Best Model & Scaler Export (best_model.pkl, scaler.pkl, label_encoders.pkl)    |
 |  - Rule-Based Tier Segmentation (Budget, Standard, Premium, Luxury)               |
-|  - Interactive Multi-Page Streamlit Web Application (streamlit run app.py)        |
+|  - Interactive Multi-Page Dashboard & Estimation UI (app.py)                     |
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -192,7 +192,7 @@ In addition to point estimates, the recommendation module delivers production-gr
 
 1. **Navigate to the Project Directory**:
    ```bash
-   cd "c:\Users\santo\OneDrive\Desktop\Dynamic_Pricing"
+   cd Dynamic_Pricing
    ```
 
 2. **Install Dependencies**:
@@ -201,10 +201,10 @@ In addition to point estimates, the recommendation module delivers production-gr
    ```
 
 3. **Run the Jupyter Notebook**:
-   - Open and execute [`dynamic_pricing_notebook.ipynb`](dynamic_pricing_notebook.ipynb) in **VS Code**, **Jupyter Notebook**, or **JupyterLab**:
-     ```bash
-     jupyter notebook dynamic_pricing_notebook.ipynb
-     ```
+   Open and execute [`dynamic_pricing_notebook.ipynb`](dynamic_pricing_notebook.ipynb) in **VS Code**, **Jupyter Notebook**, or **JupyterLab**:
+   ```bash
+   jupyter notebook dynamic_pricing_notebook.ipynb
+   ```
    - **Cell 1**: Imports core scientific and machine learning libraries.
    - **Cell 2**: Loads `rideshare_kaggle.csv` directly from the local directory.
    - **Cells 3–7**: Generates comprehensive exploratory visual charts (Target, Temporal, Route, Weather).
@@ -214,28 +214,15 @@ In addition to point estimates, the recommendation module delivers production-gr
    - **Cell 17**: Demonstrates the `recommend_fare()` production pricing heuristic across 5 scenarios.
    - **Cell 18**: Serializes `best_model.pkl`, `scaler.pkl`, `label_encoders.pkl`, and `model_metrics.json`.
 
-4. **Launch Streamlit Dashboard from Terminal Anytime**:
+4. **Standalone Training Pipeline (CLI Alternative)**:
+   ```bash
+   python train_models.py
+   ```
+
+5. **Interactive Dashboard UI (Optional)**:
    ```bash
    streamlit run app.py
    ```
-   Open **http://localhost:8501** in your web browser.
-   ```
-
-3. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Run Model Training via Jupyter / IPython (Optional if artifacts exist)**:
-   ```bash
-   jupyter notebook dynamic_pricing_notebook.ipynb
-   ```
-
-5. **Launch the Streamlit Web Application**:
-   ```bash
-   streamlit run app.py
-   ```
-   Open your browser to `http://localhost:8501`.
 
 ---
 
