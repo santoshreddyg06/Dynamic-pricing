@@ -1,0 +1,18 @@
+# Large dataset (>100MB exceeds GitHub limits)
+rideshare_kaggle.csv
+
+# Python Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Checkpoints
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Temporary / Scratch
+scratch/
+*.log
