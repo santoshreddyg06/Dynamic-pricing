@@ -17,6 +17,7 @@ An end-to-end Machine Learning and Dynamic Pricing decision support system train
 - [Project Directory Structure](#-project-directory-structure)
 - [Feature Engineering & Schema](#-feature-engineering--schema)
 - [Machine Learning Models & Evaluation](#-machine-learning-models--evaluation)
+- [Key Findings](#-key-findings)
 - [Pricing Recommendation Engine](#-pricing-recommendation-engine)
 - [Setup & Execution Guide](#-setup--execution-guide)
 - [Requirements](#-requirements)
@@ -45,11 +46,12 @@ This project implements:
 The system utilizes the Uber and Lyft Boston Dataset (`rideshare_kaggle.csv`):
 - **Total Records**: 693,071 ride queries
 - **Feature Dimensionality**: 57 raw attributes (timestamps, spatial endpoints, service classes, DarkSky hourly meteorological metrics)
-- **Target Variable**: `price` (Continuous, USD). Minimum: \$3.00, Maximum: \$67.50, Mean: ~\$16.22.
+- **Collection Window**: 17 dates between 26 Nov and 18 Dec 2018 (with gaps on 5–8 and 11–12 Dec) — a ~3-week scrape, not a continuous 2-month history.
+- **Target Variable**: `price` (Continuous, USD). Minimum: \$2.50, Maximum: \$97.50, Mean: \$16.55, Median: \$13.50 (right-skewed, skewness 1.05).
 - **Missing Values**: 55,095 records in `price` correspond exclusively to `cab_type == 'Uber'` under `name == 'Taxi'`, where Uber functions solely as an e-hail dispatcher with municipal meter pricing. These rows are appropriately dropped during supervised learning preprocessing.
 - **Geographic Coverage**: 12 key Boston hubs (e.g., Boston University, Fenway, Financial District, South Station, North End, Back Bay).
 - **Service Providers**: Uber (7 products) and Lyft (6 products).
-- **Surge Factors**: Lyft `surge_multiplier` ranging from `1.0x` to `3.0x`.
+- **Surge Factors**: Only Lyft surges — `surge_multiplier` from `1.0x` to `3.0x` on 6.8% of Lyft rides; Uber is always `1.0x` in this dataset.
 
 ---
 
@@ -92,7 +94,10 @@ The system utilizes the Uber and Lyft Boston Dataset (`rideshare_kaggle.csv`):
 ```
 Dynamic_Pricing/
 │
-├── dynamic_pricing_notebook.ipynb  # Primary Jupyter notebook (Cells 1-18)
+├── dynamic_pricing_notebook.ipynb           # Original Jupyter notebook (Cells 1-18)
+├── dynamic_pricing_notebook_improved.ipynb  # Extended EDA, honest CV & diagnostics (executed, with outputs)
+├── CHANGES.md                               # What changed in the improved analysis and why
+├── train_models.py                 # Standalone CLI training pipeline
 ├── app.py                          # Streamlit Multi-Page Interactive Dashboard
 ├── requirements.txt                # Production environment dependencies
 ├── README.md                       # Comprehensive system architecture & documentation
@@ -159,14 +164,50 @@ The system evaluates four regression architectures to capture both linear baseli
 
 ### Benchmark Evaluation Metrics Summary
 
-| Model | MAE (\$) | RMSE (\$) | $R^2$ Score | 5-Fold CV $R^2$ | Inference Latency |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Linear Regression** | ~\$4.78 | ~\$6.28 | ~0.528 | 0.527 ± 0.003 | < 1 ms |
-| **Random Forest** | ~\$1.42 | ~\$2.18 | ~0.943 | 0.941 ± 0.002 | ~18 ms |
-| **Gradient Boosting** | ~\$1.48 | ~\$2.25 | ~0.939 | 0.938 ± 0.002 | ~8 ms |
-| **XGBoost (Champion)**| **~\$1.38** | **~\$2.09** | **~0.948** | **0.946 ± 0.002** | **~4 ms** |
+Measured by executing [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricing_notebook_improved.ipynb) on the full dataset (637,976 priced rides, 80/20 split with `random_state=42`, 127,596 test rides). 5-fold CV for **every** model uses the same 25,000-row training sample and the same shuffled folds.
 
-*Note: The primary predictive drivers identified by tree feature importances are vehicle class (`name_enc`), trip `distance`, `surge_multiplier`, and route combination (`source_enc`, `destination_enc`).*
+| Model | MAE (\$) | RMSE (\$) | Test $R^2$ | MAPE | 5-Fold CV $R^2$ |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **XGBoost (Champion)** | **\$1.084** | **\$1.650** | **0.9688** | **8.05%** | **0.9618 ± 0.0020** |
+| Random Forest | \$1.114 | \$1.722 | 0.9660 | 8.28% | 0.9565 ± 0.0026 |
+| Gradient Boosting | \$1.141 | \$1.724 | 0.9659 | 8.46% | 0.9621 ± 0.0024 |
+| Linear Regression (one-hot + interactions) | \$1.271 | \$1.854 | 0.9606 | 9.31% | 0.9586 ± 0.0025 |
+| *Baseline: tariff formula* `(base + rate × distance) × surge` | \$1.304 | \$1.888 | 0.9591 | 9.40% | – |
+| *Baseline: service-class median* | \$3.028 | \$4.588 | 0.7585 | 19.74% | – |
+| Linear Regression (label-encoded, original) | \$5.157 | \$6.490 | 0.5169 | 39.37% | 0.5149 ± 0.0082 |
+
+*Notes:*
+- *The previous version of this table (XGBoost MAE \$1.38 / R² 0.948 …) did not match what the code produces. The earlier `model_metrics.json` also stored `CV_R2 = R2 − 0.002` for Linear Regression and Gradient Boosting instead of a computed value. Both are corrected; see [CHANGES.md](CHANGES.md).*
+- *Feature importance (permutation importance on held-out data): `name` ≫ `distance` > `cab_type` > `surge_multiplier` > `destination` / `source`. All weather and time features fall below ΔR² = 0.001.*
+
+---
+
+## 🔎 Key Findings
+
+From the extended analysis in [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricing_notebook_improved.ipynb):
+
+1. **Fares are close to a fixed tariff.** A per-class base fare plus a per-class per-mile rate, multiplied by surge, explains **R² = 0.959** on its own. Per-mile rates range from **\$1.20 (UberPool)** to **\$4.54 (Lux Black)**. **WAV is priced identically to UberX**, and Lyft fares follow a discrete price ladder.
+2. **Uber vs Lyft (tier-matched, non-surged rides):**
+   - Lyft is cheaper for Shared (−\$2.76), Standard (−\$0.52) and XL (−\$1.03).
+   - Uber is cheaper for Premium (Lyft +\$1.60) and Premium XL (Lyft +\$0.78).
+   - All differences are significant (Mann-Whitney p < 1e-100).
+3. **Surge is a Lyft-only, location-driven signal.**
+   - 6.8% of Lyft rides surge, and Uber never does. *Shared* never surges, and every other Lyft product surges at the same 8.19% rate.
+   - Surge rates range from 11.2% of Back Bay pickups to 1.5% in North End.
+   - Surge barely changes by hour (5.9–8.0%) and is **not** higher in rain (6.6% vs 7.1% clear-day).
+4. **Time of day and weather do not move prices.**
+   - Hourly mean fares vary by only 0.74% (Kruskal-Wallis p = 0.999); there is no rush-hour premium.
+   - After removing the tariff × surge effect, every weather and time feature has |ρ| < 0.01 with the residual.
+   - Within UberX, weather icon explains ε² = 0.0002 of price variance.
+   - 10 pairs of weather columns are near-duplicates (|r| > 0.9).
+5. **Six features are enough.** Retraining XGBoost without all 21 weather and time features gives R² **0.9691**, slightly better than the 0.9688 with them. The six are `distance`, `surge_multiplier`, `name`, `cab_type`, `source` and `destination`. Removing `name` drops R² to 0.18.
+6. **Where the model errs:**
+   - Highest absolute error: UberXL (MAE \$1.54).
+   - Highest relative error: Shared (MAPE 22%, because fares are cheap).
+   - Error grows with distance (MAE \$0.60 under 1 mi → \$1.72 at 5–8 mi) and with surge level.
+7. **The linear model's low score came from the encoding, not the method.** One-hot encoding the service class (with class × distance and class × surge terms) lifts OLS from R² 0.52 to **0.96**.
+
+> ⚠️ **Caveat for the recommender:** the rule-based surge advice (peak hours, bad weather → higher surge) is **not supported by this dataset**. A location-based surge signal would be more defensible. Also, `day` and `month` only identify dates within a 3-week scrape and will not generalise to new periods.
 
 ---
 
@@ -174,9 +215,8 @@ The system evaluates four regression architectures to capture both linear baseli
 
 In addition to point estimates, the recommendation module delivers production-grade business logic:
 
-1. **Confidence Interval Estimation**: Computes a dynamic bounded price corridor ($\pm 10\%$):
-   - **Lower Bound**: `Price_Low = 0.90 × Predicted_Fare`
-   - **Upper Bound**: `Price_High = 1.10 × Predicted_Fare`
+1. **Prediction Interval Estimation** *(improved notebook)*: an **empirical 80% interval** per service class, built from the champion model's 10th/90th-percentile test residuals. For example, UberX is −\$1.26 / +\$1.38 and Lux Black XL is −\$2.22 / +\$2.17.
+   - The original notebook and app use a fixed ±10% corridor: `Price_Low = 0.90 × Predicted_Fare`, `Price_High = 1.10 × Predicted_Fare`.
 
 2. **Dynamic Pricing Tier Classification**:
    - 🟢 **Budget Tier** (Fare < $10.00): Shared / Pool and short-distance transit options.
@@ -217,6 +257,8 @@ In addition to point estimates, the recommendation module delivers production-gr
    - **Cell 17**: Demonstrates the `recommend_fare()` production pricing heuristic across 5 scenarios.
    - **Cell 18**: Serializes `best_model.pkl`, `scaler.pkl`, `label_encoders.pkl`, and `model_metrics.json`.
 
+   For the full analysis, run [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricing_notebook_improved.ipynb) instead. It keeps every original cell and adds about 20 analysis sections, listed in [CHANGES.md](CHANGES.md). A full run took ~20 min on a 12-thread / 16 GB laptop. Have at least ~4 GB of RAM free.
+
 4. **Standalone Training Pipeline (CLI Alternative)**:
    ```bash
    python train_models.py
@@ -252,7 +294,7 @@ This system is engineered in accordance with production machine learning best pr
 | :--- | :--- | :--- |
 | **Theoretical Foundations** | Formal mathematical formulation of Linear Regression (OLS), Ensemble Bagging (Random Forest), Gradient Boosting theory, regularized objective functions (XGBoost), and Dynamic Pricing surge elasticity. | Embedded in notebook theoretical sections, LaTeX formulations, and documentation. |
 | **Pipeline Engineering** | Modular, reproducible Python pipeline: automated data cleaning, domain feature engineering (`price_per_mile`, peak hours, weather categories), categorical encoding, feature scaling, and inference recommendation module. | Notebook **Cells 1–18**, standalone training pipeline in [`train_models.py`](train_models.py), and web dashboard in [`app.py`](app.py). |
-| **Empirical Benchmarking & Validation** | Rigorous evaluation across 637k records: MAE, RMSE, $R^2$, 5-Fold Cross-Validation with variance analysis, top-15 feature importance rankings, and actual-vs-predicted residual diagnostics. | Notebook **Cells 14, 15, 16**; Model comparison tables, benchmark bar charts, residual scatter plots, and CV results. |
+| **Empirical Benchmarking & Validation** | Evaluation across 637k records: MAE, RMSE, $R^2$, MAPE, naive and formula baselines, computed 5-fold CV for every model, permutation importance, feature-group ablation, partial dependence and per-class error diagnostics. | Notebook **Cells 14–16**; improved notebook **Cells 9b, 13b, 14b, 14c, 15b, 15c**. |
 | **Production Artifacts & Serving** | Serialized model artifacts (`best_model.pkl`, `scaler.pkl`, `label_encoders.pkl`, `model_metrics.json`), rule-based pricing tier segmentation, dynamic surge advisory, and interactive multi-page web application. | [`best_model.pkl`](best_model.pkl), [`app.py`](app.py), and [`model_metrics.json`](model_metrics.json). |
 
 ---

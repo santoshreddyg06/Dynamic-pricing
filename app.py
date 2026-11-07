@@ -139,13 +139,13 @@ def load_benchmark_metrics():
         except Exception:
             pass
 
-    # Standardized benchmark values derived from test set evaluation
+    # Fallback = measured results of dynamic_pricing_notebook_improved.ipynb (80/20 split, real 5-fold CV)
     return {
         "models": {
-            "Linear Regression": {"MAE": 4.78, "RMSE": 6.28, "R2": 0.528, "CV_R2": 0.527},
-            "Random Forest": {"MAE": 1.42, "RMSE": 2.18, "R2": 0.943, "CV_R2": 0.941},
-            "Gradient Boosting": {"MAE": 1.48, "RMSE": 2.25, "R2": 0.939, "CV_R2": 0.938},
-            "XGBoost": {"MAE": 1.38, "RMSE": 2.09, "R2": 0.948, "CV_R2": 0.946}
+            "Linear Regression": {"MAE": 5.157, "RMSE": 6.490, "R2": 0.5169, "CV_R2": 0.5149},
+            "Random Forest": {"MAE": 1.114, "RMSE": 1.722, "R2": 0.9660, "CV_R2": 0.9565},
+            "Gradient Boosting": {"MAE": 1.141, "RMSE": 1.724, "R2": 0.9659, "CV_R2": 0.9621},
+            "XGBoost": {"MAE": 1.084, "RMSE": 1.650, "R2": 0.9688, "CV_R2": 0.9618}
         },
         "best_model_name": "XGBoost",
         "sample_size": 637976,
@@ -313,7 +313,7 @@ else:
 st.sidebar.markdown("""
 **Dataset**: Kaggle Boston Uber/Lyft  
 **Records**: 693,071  
-**Target**: `price` ($3.00 - $67.50)  
+**Target**: `price` ($2.50 - $97.50)
 """)
 
 # ---------------------------------------------------------
@@ -562,7 +562,7 @@ elif page_selection == "📈 Model Performance":
     # Metric Cards Top Row
     col_m1, col_m2, col_m3, col_m4 = st.columns(4)
     best_name = metrics_data.get("best_model_name", "XGBoost")
-    best_metrics = models_dict.get(best_name, {"MAE": 1.38, "RMSE": 2.09, "R2": 0.948, "CV_R2": 0.946})
+    best_metrics = models_dict.get(best_name, {"MAE": 1.084, "RMSE": 1.650, "R2": 0.9688, "CV_R2": 0.9618})
 
     with col_m1:
         st.markdown(f"""

@@ -189,10 +189,12 @@ def main():
     X_cv = X_train_scaled[cv_idx]
     y_cv = y_train.iloc[cv_idx]
 
-    cv_scores_xgb = cross_val_score(xgb_model, X_cv, y_cv, cv=5, scoring='r2', n_jobs=-1)
-    cv_scores_rf = cross_val_score(rf, X_cv, y_cv, cv=5, scoring='r2', n_jobs=-1)
-    print(f"      XGBoost 5-Fold Mean R²:       {cv_scores_xgb.mean():.4f} (± {cv_scores_xgb.std():.4f})")
-    print(f"      Random Forest 5-Fold Mean R²: {cv_scores_rf.mean():.4f} (± {cv_scores_rf.std():.4f})")
+    # Cross-validate EVERY model on the same sample and folds (previously only XGB/RF were computed
+    # and the other CV scores were written as R2 - 0.002).
+    cv_results = {}
+    for name, v in results.items():
+        cv_results[name] = cross_val_score(v['model'], X_cv, y_cv, cv=5, scoring='r2', n_jobs=-1)
+        print(f"      {name:18s} 5-Fold Mean R²: {cv_results[name].mean():.4f} (± {cv_results[name].std():.4f})")
 
     # 7. Serialize Artifacts
     print("\n[7/7] Serializing production artifacts...")
@@ -206,7 +208,8 @@ def main():
                 "MAE": float(v['MAE']),
                 "RMSE": float(v['RMSE']),
                 "R2": float(v['R2']),
-                "CV_R2": float(cv_scores_xgb.mean() if k == 'XGBoost' else (cv_scores_rf.mean() if k == 'Random Forest' else v['R2'] - 0.002))
+                "CV_R2": float(cv_results[k].mean()),
+                "CV_R2_std": float(cv_results[k].std())
             } for k, v in results.items()
         },
         "best_model_name": best_model_name,
