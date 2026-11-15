@@ -95,7 +95,7 @@ The system utilizes the Uber and Lyft Boston Dataset (`rideshare_kaggle.csv`):
 Dynamic_Pricing/
 │
 ├── dynamic_pricing_notebook.ipynb           # Original Jupyter notebook (Cells 1-18)
-├── DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb  # Extended EDA, honest CV & diagnostics (executed, with outputs)
+├── DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb  # Extended EDA, cross-validation & diagnostics (executed, with outputs)
 ├── CHANGES.md                               # What changed in the improved analysis and why
 ├── train_models.py                 # Standalone CLI training pipeline
 ├── app.py                          # Streamlit Multi-Page Interactive Dashboard
@@ -154,27 +154,27 @@ The system evaluates four regression architectures to capture both linear baseli
 1. **Linear Regression (OLS Baseline)**:
    - Establishes fundamental linear distance and surge elasticity benchmarks.
    - Interpretable baseline coefficient validation.
-2. **Random Forest Regressor (`n_estimators=100`, `n_jobs=-1`)**:
+2. **Random Forest Regressor (`n_estimators=100`, `max_samples=0.4`, `n_jobs=-1`)**:
    - Non-parametric ensemble of decision trees.
    - Captures non-linear thresholds between vehicle types and route pairs without multicollinearity degradation.
-3. **Gradient Boosting Regressor (`n_estimators=100`, `learning_rate=0.1`, `max_depth=5`)**:
+3. **Histogram-based Gradient Boosting Regressor (`HistGradientBoostingRegressor`: `max_iter=100`, `learning_rate=0.1`, `max_depth=5`)**:
    - Sequential error correction minimizing Mean Squared Error loss.
 4. **XGBoost Regressor (`n_estimators=200`, `learning_rate=0.1`, `max_depth=6`, `n_jobs=-1`)**:
    - High-performance gradient boosted decision trees with regularized objective functions (`L1` / `L2`), parallel tree construction, and cache-aware access patterns.
 
 ### Benchmark Evaluation Metrics Summary
 
-Measured by executing [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb) on the full dataset (637,976 priced rides, 80/20 split with `random_state=42`, 127,596 test rides). 5-fold CV for **every** model uses the same 25,000-row training sample and the same shuffled folds.
+Measured by executing [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb) on the full dataset (637,976 priced rides, 80/20 split with `random_state=42`, 127,596 test rides). 5-fold CV for **every** model uses the same 100,000-row training sample and the same shuffled folds.
 
 | Model | MAE (USD) | RMSE (USD) | Test R² | MAPE | 5-Fold CV R² |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **XGBoost (Champion)** | **`$1.084`** | **`$1.650`** | **0.9688** | **8.05%** | **0.9618 ± 0.0020** |
-| Random Forest | `$1.114` | `$1.722` | 0.9660 | 8.28% | 0.9565 ± 0.0026 |
-| Gradient Boosting | `$1.141` | `$1.724` | 0.9659 | 8.46% | 0.9621 ± 0.0024 |
-| Linear Regression (one-hot + interactions) | `$1.271` | `$1.854` | 0.9606 | 9.31% | 0.9586 ± 0.0025 |
+| **XGBoost (Champion)** | **`$1.084`** | **`$1.650`** | **0.9688** | **8.05%** | **0.9669 ± 0.0011** |
+| Gradient Boosting | `$1.130` | `$1.708` | 0.9665 | 8.37% | 0.9655 ± 0.0010 |
+| Random Forest | `$1.114` | `$1.722` | 0.9660 | 8.28% | 0.9633 ± 0.0010 |
+| Linear Regression (one-hot + interactions) | `$1.271` | `$1.854` | 0.9606 | 9.31% | 0.9602 ± 0.0013 |
 | *Baseline: tariff formula* `(base + rate × distance) × surge` | `$1.304` | `$1.888` | 0.9591 | 9.40% | – |
 | *Baseline: service-class median* | `$3.028` | `$4.588` | 0.7585 | 19.74% | – |
-| Linear Regression (label-encoded, original) | `$5.157` | `$6.490` | 0.5169 | 39.37% | 0.5149 ± 0.0082 |
+| Linear Regression (label-encoded, original) | `$5.157` | `$6.490` | 0.5169 | 39.37% | 0.5146 ± 0.0045 |
 
 *Notes:*
 - *The previous version of this table (XGBoost MAE `$1.38` / R² 0.948 …) did not match what the code produces. The earlier `model_metrics.json` also stored `CV_R2 = R2 − 0.002` for Linear Regression and Gradient Boosting instead of a computed value. Both are corrected; see [CHANGES.md](CHANGES.md).*
@@ -257,7 +257,7 @@ In addition to point estimates, the recommendation module delivers production-gr
    - **Cell 17**: Demonstrates the `recommend_fare()` production pricing heuristic across 5 scenarios.
    - **Cell 18**: Serializes `best_model.pkl`, `scaler.pkl`, `label_encoders.pkl`, and `model_metrics.json`.
 
-   For the full analysis, run [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb) instead. It keeps every original cell and adds about 20 analysis sections, listed in [CHANGES.md](CHANGES.md). A full run took ~20 min on a 12-thread / 16 GB laptop. Have at least ~4 GB of RAM free.
+   For the full analysis, run [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb) instead. It keeps every original cell and adds about 20 analysis sections, listed in [CHANGES.md](CHANGES.md). A full run took about 5 min on a 12-thread / 16 GB laptop. Have at least ~4 GB of RAM free.
 
 4. **Standalone Training Pipeline (CLI Alternative)**:
    ```bash
