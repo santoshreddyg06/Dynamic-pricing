@@ -139,7 +139,7 @@ def load_benchmark_metrics():
         except Exception:
             pass
 
-    # Fallback = measured results of dynamic_pricing_notebook_improved.ipynb (80/20 split, real 5-fold CV)
+    # Fallback = measured results of DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb (80/20 split, real 5-fold CV)
     return {
         "models": {
             "Linear Regression": {"MAE": 5.157, "RMSE": 6.490, "R2": 0.5169, "CV_R2": 0.5149},

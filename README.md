@@ -95,7 +95,7 @@ The system utilizes the Uber and Lyft Boston Dataset (`rideshare_kaggle.csv`):
 Dynamic_Pricing/
 │
 ├── dynamic_pricing_notebook.ipynb           # Original Jupyter notebook (Cells 1-18)
-├── dynamic_pricing_notebook_improved.ipynb  # Extended EDA, honest CV & diagnostics (executed, with outputs)
+├── DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb  # Extended EDA, honest CV & diagnostics (executed, with outputs)
 ├── CHANGES.md                               # What changed in the improved analysis and why
 ├── train_models.py                 # Standalone CLI training pipeline
 ├── app.py                          # Streamlit Multi-Page Interactive Dashboard
@@ -164,7 +164,7 @@ The system evaluates four regression architectures to capture both linear baseli
 
 ### Benchmark Evaluation Metrics Summary
 
-Measured by executing [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricing_notebook_improved.ipynb) on the full dataset (637,976 priced rides, 80/20 split with `random_state=42`, 127,596 test rides). 5-fold CV for **every** model uses the same 25,000-row training sample and the same shuffled folds.
+Measured by executing [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb) on the full dataset (637,976 priced rides, 80/20 split with `random_state=42`, 127,596 test rides). 5-fold CV for **every** model uses the same 25,000-row training sample and the same shuffled folds.
 
 | Model | MAE (USD) | RMSE (USD) | Test R² | MAPE | 5-Fold CV R² |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -184,7 +184,7 @@ Measured by executing [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricin
 
 ## 🔎 Key Findings
 
-From the extended analysis in [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricing_notebook_improved.ipynb):
+From the extended analysis in [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb):
 
 1. **Fares are close to a fixed tariff.** A per-class base fare plus a per-class per-mile rate, multiplied by surge, explains **R² = 0.959** on its own. Per-mile rates range from **`$1.20` (UberPool)** to **`$4.54` (Lux Black)**. **WAV is priced identically to UberX**, and Lyft fares follow a discrete price ladder.
 2. **Uber vs Lyft (tier-matched, non-surged rides):**
@@ -257,7 +257,7 @@ In addition to point estimates, the recommendation module delivers production-gr
    - **Cell 17**: Demonstrates the `recommend_fare()` production pricing heuristic across 5 scenarios.
    - **Cell 18**: Serializes `best_model.pkl`, `scaler.pkl`, `label_encoders.pkl`, and `model_metrics.json`.
 
-   For the full analysis, run [`dynamic_pricing_notebook_improved.ipynb`](dynamic_pricing_notebook_improved.ipynb) instead. It keeps every original cell and adds about 20 analysis sections, listed in [CHANGES.md](CHANGES.md). A full run took ~20 min on a 12-thread / 16 GB laptop. Have at least ~4 GB of RAM free.
+   For the full analysis, run [`DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`](DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb) instead. It keeps every original cell and adds about 20 analysis sections, listed in [CHANGES.md](CHANGES.md). A full run took ~20 min on a 12-thread / 16 GB laptop. Have at least ~4 GB of RAM free.
 
 4. **Standalone Training Pipeline (CLI Alternative)**:
    ```bash

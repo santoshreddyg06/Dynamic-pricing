@@ -1,6 +1,6 @@
 # Changelog: Improved EDA, Honest Metrics & Diagnostics
 
-This document lists everything changed on the `improved-eda-honest-metrics` branch and explains why. All numbers come from executing `dynamic_pricing_notebook_improved.ipynb` end to end on the full Kaggle dataset (693,071 rows → 637,976 priced rides), using an 80/20 split with `random_state=42`.
+This document lists everything changed on the `improved-eda-honest-metrics` branch and explains why. All numbers come from executing `DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb` end to end on the full Kaggle dataset (693,071 rows → 637,976 priced rides), using an 80/20 split with `random_state=42`.
 
 ---
 
@@ -21,7 +21,7 @@ This document lists everything changed on the `improved-eda-honest-metrics` bran
 - **Duplicate `dropna`** in the feature-engineering cell removed (prices were already dropped in Cell 4).
 - **`train_models.py`** now cross-validates all four models (see §1).
 
-## 3. New notebook: `dynamic_pricing_notebook_improved.ipynb`
+## 3. New notebook: `DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb`
 
 The original notebook is unchanged. The improved notebook keeps every original cell and adds the following sections. It is committed **with all outputs**, so the charts can be viewed without re-running it.
 
@@ -59,7 +59,7 @@ Charts now use one consistent palette that is safe for colour-blind viewers: Ube
 
 | File | Change |
 |---|---|
-| `dynamic_pricing_notebook_improved.ipynb` | **New**: extended analysis, executed with outputs |
+| `DYNAMIC_PRICES_FINAL_NOTEBOOK.ipynb` | **New**: extended analysis, executed with outputs |
 | `CHANGES.md` | **New**: this document |
 | `README.md` | Results replaced with measured values; dataset statistics corrected; Key Findings section added; recommender section updated |
 | `model_metrics.json` | Regenerated with real CV for every model, plus `CV_R2_std` and `reference_models` |
